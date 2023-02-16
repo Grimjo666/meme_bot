@@ -41,7 +41,7 @@ def writing_info_to_bd(tg_id, name, username, text_count=0, voice_count=0, len_a
 
 
 # Получаем всю информацию из tg_message_data
-def get_message_stats() -> list:
+def get_message_stats_from_db() -> list:
     base2 = sqlite3.connect('database/tg_meme_data.db')
     cur2 = base2.cursor()
 
