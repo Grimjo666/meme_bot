@@ -49,3 +49,5 @@ def get_message_stats_from_db() -> list:
     data = cur2.fetchall()
     base2.close()
     return data
+
+

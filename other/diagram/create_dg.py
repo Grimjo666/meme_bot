@@ -23,4 +23,4 @@ def create_diagram(person_info_list):
     plt.title('Актив на 119')
 
     # Сохраняем диаграмму
-    plt.savefig('diagram\statistic_person_activ.png')
+    plt.savefig('other/diagram/statistic_person_activ.png')

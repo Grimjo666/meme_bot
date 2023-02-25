@@ -2,7 +2,7 @@ from aiogram import types, Dispatcher
 
 from config import CHANNEL_ID, BOT_ADMIN_ID
 
-from create_db import writing_info_to_bd
+from database.create_db import writing_info_to_bd
 
 
 flag = 0
@@ -21,14 +21,14 @@ async def start_message_counting(message: types.Message):
 # Подсчёт количества текстовых сообщений и их символов
 async def counting_text_message(message: types.Message):
     global flag
-    if flag == 1: # and message.chat.id == CHANNEL_ID
+    if flag == 1 and message.chat.id == CHANNEL_ID:
         writing_info_to_bd(message.from_user.id, message.from_user.first_name, message.from_user.username, text_count=1, len_all_text=len(message.text))
 
 
 # Подсчёт количества и длины голосовых сообщений
 async def counting_voice_message(message: types.Message):
     global flag
-    if flag == 1:
+    if flag == 1 and message.chat.id == CHANNEL_ID:
         writing_info_to_bd(message.from_user.id, message.from_user.first_name, message.from_user.username, voice_count=1, len_all_voice=message.voice.duration)
 
 
