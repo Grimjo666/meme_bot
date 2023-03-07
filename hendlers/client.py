@@ -8,7 +8,10 @@ from database.create_db import get_message_stats_from_db
 from other.diagram import create_dg
 from create_bot import bot
 from other.weather import city_cord, get_weather_dict
-from keyboards.client_keyboard import ikb_main_menu, weather_menu, weather_interval, info_menu, bot_info_text
+
+# Импорты клавиатур
+from keyboards.client_keyboard import ikb_main_menu, weather_menu_ikb, weather_interval_ikb
+from keyboards.client_keyboard import info_menu_ikb, bot_info_text_ikb, statistic_message_ikb
 
 from collections import defaultdict
 
@@ -36,7 +39,7 @@ async def info_btn_handler(callback_query, state):
     await bot.edit_message_text(chat_id=callback_query.from_user.id,
                                 message_id=callback_query.message.message_id,
                                 text='Информация:',
-                                reply_markup=info_menu)
+                                reply_markup=info_menu_ikb)
     await state.set_state(MenuState.info)
 
 
@@ -45,7 +48,7 @@ async def bot_info_handler(callback_query):
     await bot.edit_message_text(chat_id=callback_query.from_user.id,
                                 message_id=callback_query.message.message_id,
                                 text='Мне пока что впадлу придумывать сюда описание',
-                                reply_markup=bot_info_text)
+                                reply_markup=bot_info_text_ikb)
 
 
 # _________________________________ Блок инфо хэндлеров _________________________________
@@ -58,7 +61,7 @@ async def weather_btn_handler(callback_query, state):
     await bot.edit_message_text(chat_id=callback_query.from_user.id,
                                 message_id=callback_query.message.message_id,
                                 text='Погодное меню:',
-                                reply_markup=weather_menu)
+                                reply_markup=weather_menu_ikb)
     await state.set_state(MenuState.weather)
 
 
@@ -67,7 +70,7 @@ async def weather_interval_handler(callback_query, state):
     await bot.edit_message_text(chat_id=callback_query.from_user.id,
                                 message_id=callback_query.message.message_id,
                                 text='Дайте доступ к своим гео данным или введите город в ручную',
-                                reply_markup=weather_interval)
+                                reply_markup=weather_interval_ikb)
 
     await state.update_data(count_weather_days=callback_query.data)
     await state.set_state(MenuState.weather_interval)
@@ -91,21 +94,18 @@ async def input_city_name(callback_query, state):
 
 # _______________________________ Блок погодных хэндлеров _______________________________
 
-
-# Обработчик для кнопки "Закрыть"
-async def close_menu(callback, state):
-    message = callback.message
-    await bot.edit_message_reply_markup(chat_id=message.chat.id,
-                                        message_id=message.message_id,
-                                        reply_markup=None)
-
-    await bot.delete_message(chat_id=message.chat.id,
-                             message_id=message.message_id)
-    await state.finish()
+# ______________________________ Блок хэндлеров статистики ______________________________
+# Обработчик для кнопки "Статистика сообщений"
+async def send_statistic_menu(callback_query, state):
+    await bot.edit_message_text(chat_id=callback_query.from_user.id,
+                                message_id=callback_query.message.message_id,
+                                text='Меню статистики',
+                                reply_markup=statistic_message_ikb)
+    await state.set_state(MenuState.statistic)
 
 
 # Функция, отправляющая пользователю статистику сообщений
-async def send_message_info(message: types.Message):
+async def send_message_info(callback_query, state):
     data = get_message_stats_from_db()
     statistic_text = ''
     for item in data:
@@ -113,11 +113,16 @@ async def send_message_info(message: types.Message):
         statistic_text += f'-- {item[3]} текстовых, общей длинной {item[5]} символов\n'
         statistic_text += f'-- {item[4]} голосовых, общей длиной {item[6]} секунд\n'
         statistic_text += f'-- {item[7]} стикер(в)\n\n\n'
-    await message.answer(statistic_text)
+
+    await bot.edit_message_text(chat_id=callback_query.from_user.id,
+                                message_id=callback_query.message.message_id,
+                                text=statistic_text,
+                                reply_markup=None)
+    await state.finish()
 
 
 # Функция, отправляющая пользователю диаграмму статистики сообщений
-async def send_message_diagram(message: types.Message):
+async def send_message_diagram(message, state):
     data = get_message_stats_from_db()
     all_mes_dict = defaultdict(int)
     diagram = ''
@@ -142,6 +147,8 @@ async def send_message_diagram(message: types.Message):
     with open('other/diagram/statistic_person_activ.png', 'rb') as photo:
         await bot.send_photo(chat_id=message.chat.id, photo=photo)
 
+# ______________________________ Блок хэндлеров статистики ______________________________
+
 
 # Хэндлер для обработки нажатий на кнопки в main_menu
 async def process_callback_main_menu(callback_query: CallbackQuery, state: FSMContext):
@@ -151,7 +158,7 @@ async def process_callback_main_menu(callback_query: CallbackQuery, state: FSMCo
     elif data == 'weather_btn':
         await weather_btn_handler(callback_query, state)
     elif data == 'message_stat_btn':
-        pass
+        await send_statistic_menu(callback_query, state)
     elif data == 'btn_close':
         await close_menu(callback_query, state)
 
@@ -196,30 +203,66 @@ async def process_callback_weather_interval_menu(callback_query: CallbackQuery, 
         await close_menu(callback_query, state)
 
 
-# Хэндлер получения города от пользователи и отправки ему погоды в этом городе
+# Хэндлер получения города от пользователя и отправки ему погоды в этом городе
 async def send_weather_by_name(message: Message, state: FSMContext):
 
     state_data = await state.get_data()
     callback_data = state_data.get('count_weather_days')
+    message_from_user = ''
 
     try:
         weather_data = get_weather_dict(city_cord(message.text))
 
         if callback_data == 'btn_weather_today':
-            for date, info in weather_data.items()[:6]:
-                print(date, info)
+            for date, info in weather_data[:6]:
+                message_from_user += f'{date}\n\n {info}\n\n\n'
+            print(len(weather_data))
+            await message.answer(message_from_user)
             await state.finish()
 
         elif callback_data == 'btn_weather_3days':
-            pass
+            for date, info in weather_data[:24:4]:
+                message_from_user += f'{date}\n\n {info}\n\n\n'
+            await message.answer(message_from_user)
+            await state.finish()
 
         elif callback_data == 'btn_weather_5days':
-            pass
+            for date, info in weather_data[::8]:
+                message_from_user += f'{date}\n\n {info}\n\n\n'
+            await message.answer(message_from_user)
+            await state.finish()
 
     except Exception as exc:
         await message.answer('Вы ввели не корректный город или что то с сервером погоды')
         await state.finish()
         print('Ошибка при получении словаря погоды:', exc)
+
+
+# Хэндлер для отправки статистики
+async def process_callback_statistics_menu(callback_query: CallbackQuery, state: FSMContext):
+    data = callback_query.data
+    if data == 'btn_show_stats':
+        await send_message_info(callback_query, state)
+    elif data == 'btn_show_diagram':
+        await send_message_diagram(callback_query.message, state)
+    elif data == 'btn_back_to_main_menu':
+        await close_menu(callback_query, state)
+        await cmd_menu(callback_query.message, state)
+    elif data == 'btn_close':
+        await close_menu(callback_query, state)
+
+
+# Обработчик для кнопки "Закрыть"
+async def close_menu(callback, state):
+    message = callback.message
+    await bot.edit_message_reply_markup(chat_id=message.chat.id,
+                                        message_id=message.message_id,
+                                        reply_markup=None)
+
+    await bot.delete_message(chat_id=message.chat.id,
+                             message_id=message.message_id)
+    await state.finish()
+
 
 def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(cmd_menu, commands=['menu', 'start', 'help'])
@@ -228,5 +271,5 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_callback_query_handler(process_callback_weather_menu, state=MenuState.weather)
     dp.register_callback_query_handler(process_callback_weather_interval_menu, state=MenuState.weather_interval)
     dp.register_message_handler(send_weather_by_name, state=MenuState.weather_city_input)
-    dp.register_message_handler(send_message_info, commands=['show_stats_info'])
+    dp.register_callback_query_handler(process_callback_statistics_menu, state=MenuState.statistic)
     dp.register_message_handler(send_message_diagram, commands=['show_dg'])

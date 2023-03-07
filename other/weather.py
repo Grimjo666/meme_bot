@@ -15,19 +15,19 @@ def city_cord(city, api_key=O_W_TOKEN):
 
 
 # we get a dict with information about the weather for 5 days
-def get_weather_dict(coord, api_key=O_W_TOKEN) -> dict:
-    weather_dict = {}
+def get_weather_dict(coord, api_key=O_W_TOKEN) -> list:
+    weather_list = []
 
     response = requests.get(
         f'http://api.openweathermap.org/data/2.5/forecast?lat={coord[0]}&lon={coord[1]}&appid={api_key}&units=metric&lang={"ru"}')
     data = response.json()
     for item in data['list']:
-        weather_dict[item['dt_txt']] = f"Температура: {floor(item['main']['temp'])}\n" \
-                                       f"Ощущается как: {floor(item['main']['feels_like'])}\n" \
+        weather_list.append((item['dt_txt'], f"Температура:  {floor(item['main']['temp'])}\n" \
+                                       f"Ощущается как:  {floor(item['main']['feels_like'])}\n" \
                                        f"{item['weather'][0]['description']}\n" \
-                                       f"'Скорость ветра:' {item['wind']['speed']} М/С"
+                                       f"Скорость ветра:  {item['wind']['speed']} М/С"))
 
-    return weather_dict
+    return weather_list
 
 
 # print(get_weather_dict(city_cord(input())))

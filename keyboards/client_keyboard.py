@@ -15,27 +15,27 @@ ikb_main_menu.add(button_info, button_weather, button_message_stat, button_close
 
 
 # Меню, при нажатии на кнопку "Информация"
-info_menu = InlineKeyboardMarkup(row_width=2)
+info_menu_ikb = InlineKeyboardMarkup(row_width=2)
 
 button_creator_info = InlineKeyboardButton(text='Создатель бота', url='tg://user?id=888175079')
 button_bot_info = InlineKeyboardButton(text='Информация о боте', callback_data='bot_info_btn')
 
-info_menu.add(button_creator_info, button_bot_info)
-info_menu.add(button_back_to_main_menu)
-info_menu.add(button_close_menu)
+info_menu_ikb.add(button_creator_info, button_bot_info)
+info_menu_ikb.add(button_back_to_main_menu)
+info_menu_ikb.add(button_close_menu)
 
 
 # Меню, при нажатии на кнопку "Информация о боте"
-bot_info_text = InlineKeyboardMarkup(row_width=1).add(button_back_to_main_menu, button_close_menu)
+bot_info_text_ikb = InlineKeyboardMarkup(row_width=1).add(button_back_to_main_menu, button_close_menu)
 
 # Меню, при нажатии на кнопку "погода"
-weather_menu = InlineKeyboardMarkup(row_width=1)
+weather_menu_ikb = InlineKeyboardMarkup(row_width=1)
 
 button_weather_today = InlineKeyboardButton(text='Погода на сегодня', callback_data='btn_weather_today')
 button_weather_3days = InlineKeyboardButton(text='Погода на 3 дня', callback_data='btn_weather_3days')
 button_weather_5days = InlineKeyboardButton(text='Погода на 5 дней', callback_data='btn_weather_5days')
 
-weather_menu.add(button_weather_today,
+weather_menu_ikb.add(button_weather_today,
                  button_weather_3days,
                  button_weather_5days,
                  button_back_to_main_menu,
@@ -43,12 +43,20 @@ weather_menu.add(button_weather_today,
 
 
 # Меню, при нажатии на кнопу "погода (временной промежуток)"
-weather_interval = InlineKeyboardMarkup(row_width=1)
+weather_interval_ikb = InlineKeyboardMarkup(row_width=1)
 
 button_send_locate = InlineKeyboardButton(text='Погода по местоположению', callback_data='btn_send_locate')
 button_choice_locate = InlineKeyboardButton(text='Ввести город в ручную', callback_data='btn_city_input')
 
-weather_interval.add(button_send_locate,
+weather_interval_ikb.add(button_send_locate,
                      button_choice_locate,
                      button_back_to_main_menu,
                      button_close_menu)
+
+
+statistic_message_ikb = InlineKeyboardMarkup(row_width=1)
+
+button_show_stats = InlineKeyboardButton(text='Показать статистику (текст)', callback_data='btn_show_stats')
+button_show_diagram = InlineKeyboardButton(text='Показать диаграмму', callback_data='btn_show_diagram')
+
+statistic_message_ikb.add(button_show_stats, button_show_diagram, button_back_to_main_menu, button_close_menu)
