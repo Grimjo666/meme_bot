@@ -1,9 +1,11 @@
 import requests
 from math import floor
 
+from config import O_W_TOKEN
+
 
 # function to convert city name to coordinates
-def city_cord(api_key, city):
+def city_cord(city, api_key=O_W_TOKEN):
 
     response = requests.get(f'http://api.openweathermap.org/geo/1.0/direct?q={city}&limit={1}&appid={api_key}')
     data = response.json()
@@ -13,7 +15,7 @@ def city_cord(api_key, city):
 
 
 # we get a dict with information about the weather for 5 days
-def get_weather_dict(api_key, coord) -> dict:
+def get_weather_dict(coord, api_key=O_W_TOKEN) -> dict:
     weather_dict = {}
 
     response = requests.get(
@@ -28,4 +30,4 @@ def get_weather_dict(api_key, coord) -> dict:
     return weather_dict
 
 
-# print(get_weather_dict(O_W_TOKEN, city_cord(O_W_TOKEN, input())))
+# print(get_weather_dict(city_cord(input())))

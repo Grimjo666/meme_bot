@@ -3,6 +3,5 @@ config.py
 .idea
 __pycache__
 database
-other/diagram/statistic_person_activ.png
 !database/create_db.py
-
+*.png
