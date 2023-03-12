@@ -1,6 +1,7 @@
 import requests
 from math import floor
 
+from database.dicts import weather_icons
 from config import O_W_TOKEN
 
 
@@ -22,10 +23,10 @@ def get_weather_dict(coord, api_key=O_W_TOKEN) -> list:
         f'http://api.openweathermap.org/data/2.5/forecast?lat={coord[0]}&lon={coord[1]}&appid={api_key}&units=metric&lang={"ru"}')
     data = response.json()
     for item in data['list']:
-        weather_list.append((item['dt_txt'], f"Температура:  {floor(item['main']['temp'])}\n" \
-                                       f"Ощущается как:  {floor(item['main']['feels_like'])}\n" \
-                                       f"{item['weather'][0]['description']}\n" \
-                                       f"Скорость ветра:  {item['wind']['speed']} М/С"))
+        weather_list.append((item['dt_txt'], f"Температура:  {floor(item['main']['temp'])} °C\n" \
+                                       f"Ощущается как:  {floor(item['main']['feels_like'])} °C\n" \
+                                       f"Скорость ветра:  {item['wind']['speed']} М/С\n" \
+                                       f"{item['weather'][0]['description'].title()} {weather_icons[item['weather'][0]['icon']]}"))
 
     return weather_list
 
