@@ -208,29 +208,30 @@ async def send_weather_by_name(message: Message, state: FSMContext):
 
     state_data = await state.get_data()
     callback_data = state_data.get('count_weather_days')
-    message_from_user = ''
+
+    async def send_weather(num, message_from_user, step=1, mes=message, st=state):
+        for date, info in weather_data[:num:step]:
+
+            hour = int(date.split()[1][:2])  # Получаем час прогноза
+
+            if hour > 19 or hour < 6:
+                message_from_user += f'📅 {date} 🌙\n\n {info}\n\n\n'
+            else:
+                message_from_user += f'📅 {date} ☀\n\n {info}\n\n\n'
+        await mes.answer(message_from_user)
+        await st.finish()
 
     try:
         weather_data = get_weather_dict(city_cord(message.text))
 
         if callback_data == 'btn_weather_today':
-            for date, info in weather_data[:6]:
-                message_from_user += f'{date}\n\n {info}\n\n\n'
-            print(len(weather_data))
-            await message.answer(message_from_user)
-            await state.finish()
+            await send_weather(6, 'Погода на ближайшие 15 часов\n\n')
 
         elif callback_data == 'btn_weather_3days':
-            for date, info in weather_data[:24:4]:
-                message_from_user += f'{date}\n\n {info}\n\n\n'
-            await message.answer(message_from_user)
-            await state.finish()
+            await send_weather(24,'Погода на ближайшие 3 дня\n\n',  step=4)
 
         elif callback_data == 'btn_weather_5days':
-            for date, info in weather_data[::8]:
-                message_from_user += f'{date}\n\n {info}\n\n\n'
-            await message.answer(message_from_user)
-            await state.finish()
+            await send_weather(40,'Погода на ближайшие 5 дней\n\n', step=8)
 
     except Exception as exc:
         await message.answer('Вы ввели не корректный город или что то с сервером погоды')

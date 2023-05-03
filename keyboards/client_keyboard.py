@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 button_back_to_main_menu = InlineKeyboardButton(text='В основное меню', callback_data='btn_back_to_main_menu')
-button_close_menu = InlineKeyboardButton(text='Закрыть', callback_data='btn_close')
+button_close_menu = InlineKeyboardButton(text='❌', callback_data='btn_close')
 
 # Основное меню бота
 ikb_main_menu = InlineKeyboardMarkup(row_width=1)
