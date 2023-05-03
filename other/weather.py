@@ -1,7 +1,7 @@
 import requests
 from math import floor
-from database.dicts import weather_icons
 
+from database.dicts import weather_icons
 from config import O_W_TOKEN
 
 
@@ -26,10 +26,14 @@ def get_weather_dict(coord, api_key=O_W_TOKEN) -> list:
     for item in data['list']:
         weather_list.append((item['dt_txt'], f"Температура:  {floor(item['main']['temp'])} °C\n" \
                                        f"Ощущается как:  {floor(item['main']['feels_like'])} °C\n" \
+
                                        f"Скорость ветра:  {item['wind']['speed']} М/С\n\n" \
+
+                                       f"Скорость ветра:  {item['wind']['speed']} М/С\n" \
+
                                        f"{item['weather'][0]['description'].title()} {weather_icons[item['weather'][0]['icon']]}"))
 
     return weather_list
 
 
-# print(get_weather_dict(city_cord(input())))
+#print(get_weather_dict(city_cord(input())))

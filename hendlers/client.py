@@ -1,6 +1,5 @@
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery
 
@@ -147,6 +146,7 @@ async def send_message_diagram(message, state):
     with open('other/diagram/statistic_person_activ.png', 'rb') as photo:
         await bot.send_photo(chat_id=message.chat.id, photo=photo)
 
+
 # ______________________________ Блок хэндлеров статистики ______________________________
 
 
@@ -205,7 +205,6 @@ async def process_callback_weather_interval_menu(callback_query: CallbackQuery, 
 
 # Хэндлер получения города от пользователя и отправки ему погоды в этом городе
 async def send_weather_by_name(message: Message, state: FSMContext):
-
     state_data = await state.get_data()
     callback_data = state_data.get('count_weather_days')
 
@@ -221,17 +220,42 @@ async def send_weather_by_name(message: Message, state: FSMContext):
         await mes.answer(message_from_user)
         await st.finish()
 
+    # функция, отправляющая пользователь погоду
+    async def send_weather(num, message_from_user='', step=1):
+
+        for date, info in weather_data[:num:step]:
+            time_sticker = '🌙'
+
+            hour = int(date.split()[1][:2])  # Получаем час прогноза погоды
+            if 6 < hour < 19:
+                time_sticker = '☀️'
+
+            message_from_user += f'📅 {date} {time_sticker}\n\n {info}\n\n\n'
+
+        await message.answer(message_from_user)
+        await state.finish()
+
+    # Блок с обработкой кнопок
     try:
         weather_data = get_weather_dict(city_cord(message.text))
 
         if callback_data == 'btn_weather_today':
+
             await send_weather(6, 'Погода на ближайшие 15 часов\n\n')
 
         elif callback_data == 'btn_weather_3days':
-            await send_weather(24,'Погода на ближайшие 3 дня\n\n',  step=4)
+            await send_weather(24, 'Погода на ближайшие 3 дня\n\n', step=4)
 
         elif callback_data == 'btn_weather_5days':
-            await send_weather(40,'Погода на ближайшие 5 дней\n\n', step=8)
+            await send_weather(40, 'Погода на ближайшие 5 дней\n\n', step=8)
+
+            await send_weather(num=6, message_from_user='Погода на сегодня\n\n')
+
+        elif callback_data == 'btn_weather_3days':
+            await send_weather(num=24, step=4, message_from_user='Погода на 3 дня\n\n')
+
+        elif callback_data == 'btn_weather_5days':
+            await send_weather(num=40, step=8, message_from_user='Погода на 5 дней\n\n')
 
     except Exception as exc:
         await message.answer('Вы ввели не корректный город или что то с сервером погоды')
